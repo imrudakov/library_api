@@ -10,21 +10,11 @@ class AuthorController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return Author[]|\Illuminate\Database\Eloquent\Collection
      */
     public function index()
     {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
+        return Author::all();
     }
 
     /**
@@ -35,7 +25,13 @@ class AuthorController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'name' => 'required',
+            'surname' => 'required',
+            'about' => 'required'
+        ]);
+
+        return Author::create($request->all());
     }
 
     /**
@@ -44,20 +40,9 @@ class AuthorController extends Controller
      * @param  \App\Models\Author  $author
      * @return \Illuminate\Http\Response
      */
-    public function show(Author $author)
+    public function show($id)
     {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Author  $author
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Author $author)
-    {
-        //
+        return Author::find($id);
     }
 
     /**
@@ -67,9 +52,17 @@ class AuthorController extends Controller
      * @param  \App\Models\Author  $author
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Author $author)
+    public function update(Request $request, $id)
     {
-        //
+        $request->validate([
+            'name' => 'string',
+            'surname' => 'string',
+            'about' => 'string'
+        ]);
+
+        $author = Author::findOrFail($id);
+        $author->update($request->all());
+        return $author;
     }
 
     /**
@@ -78,8 +71,8 @@ class AuthorController extends Controller
      * @param  \App\Models\Author  $author
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Author $author)
+    public function destroy(Request $request, $id)
     {
-        //
+        return Author::destroy($id);
     }
 }
