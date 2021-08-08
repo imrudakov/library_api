@@ -21,7 +21,7 @@ class RatingController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
@@ -34,11 +34,11 @@ class RatingController extends Controller
         ]);
 
         //todo Нужно вынести в функцию (дублируеться
-       $ratingable_type =  $request->ratingable_type;
+        $ratingable_type = $request->ratingable_type;
 
-        if($ratingable_type=='author'){
+        if ($ratingable_type == 'author') {
             $ratingable_type = 'App\Models\Author';
-        } elseif($ratingable_type=='book'){
+        } elseif ($ratingable_type == 'book') {
             $ratingable_type = 'App\Models\Book';
         }
 
@@ -51,7 +51,7 @@ class RatingController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Raiting  $raiting
+     * @param \App\Models\Raiting $raiting
      * @return \Illuminate\Http\Response
      */
     public function show($id)
@@ -63,43 +63,50 @@ class RatingController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Raiting  $raiting
+     * @param \Illuminate\Http\Request $request
+     * @param \App\Models\Raiting $raiting
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $id)
     {
         $request->validate([
-            'rating' => 'integer|min:1|max:5', // Расширить добавав 0 = удаление
+            'rating' => 'integer|min:0|max:5',
             'ratingable_id' => 'integer',
             'ratingable_type' => 'string'
         ]);
 
-        //todo Нужно вынести в функцию (дублируеться
-        $ratingable_type =  $request->ratingable_type;
 
-        if($ratingable_type=='author'){
-            $ratingable_type = 'App\Models\Author';
-        } elseif($ratingable_type=='book'){
-            $ratingable_type = 'App\Models\Book';
+        if ($request->rating == 0) {
+            $rating = Rating::destroy($id);
+        } else {
+
+            //todo Нужно вынести в функцию (дублируеться
+            $ratingable_type = $request->ratingable_type;
+
+            if ($ratingable_type == 'author') {
+                $ratingable_type = 'App\Models\Author';
+            } elseif ($ratingable_type == 'book') {
+                $ratingable_type = 'App\Models\Book';
+            }
+
+            $attributes = $request->all();
+            $attributes['ratingable_type'] = $ratingable_type;
+
+            $rating = Rating::findOrFail($id);
+            $rating->update($attributes);
         }
 
-        $attributes = $request->all();
-        $attributes['ratingable_type'] = $ratingable_type;
-
-        $rating = Rating::findOrFail($id);
-        $rating->update($attributes);
         return $rating;
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Raiting  $raiting
+     * @param \App\Models\Raiting $raiting
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Raiting $raiting)
+    public function destroy(Request $request, $id)
     {
-        // Сделать удаление оценки если проставили 0 в апдейте
+        return Rating::destroy($id);
     }
 }

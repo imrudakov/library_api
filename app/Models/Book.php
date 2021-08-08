@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 /**
  * App\Models\Book
@@ -30,11 +31,24 @@ class Book extends Model
 {
     use HasFactory;
 
+    protected $hidden = [
+        'created_at',
+        'updated_at'
+    ];
+
     protected $fillable = [
         'author_id',
         'title',
         'description'
     ];
+
+    public function scopeWithRating()
+    {
+        return $this->select(['books.*', DB::raw('ROUND(AVG(ratings.rating),1) As rating')])
+            ->join('ratings', 'books.id', '=', 'ratings.ratingable_id')
+            ->where('ratingable_type', '=', 'App\\Models\\Book')
+            ->groupBy(['id','author_id','title', 'description']);
+    }
 
     public function author(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {

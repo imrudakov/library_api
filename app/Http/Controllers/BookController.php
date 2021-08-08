@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Author;
 use App\Models\Book;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class BookController extends Controller
 {
@@ -15,15 +16,45 @@ class BookController extends Controller
      */
     public function index(Request $request)
     {
-        $author_id = $request->author_id;
+       /* $author_id = $request->author_id;
+        $orderBy = ($request->ob) ? $request->ob : 'title';
+        $orderDir = ($request->od) ? $request->od : 'asc';
 
-        if ($author_id) {
-            $book = Book::where('author_id', $author_id)->get()->all();
+        if($orderBy == 'rating'){
+            $book = DB::table('books')
+                ->select('books.title','books.title',  DB::raw('ROUND(AVG(ratings.rating),1) As rating'))
+                ->join('ratings', 'books.id', '=', 'ratings.ratingable_id')
+                ->where('ratingable_type','=','App\\Models\\Book')
+                ->groupBy(['title','description'])
+                ->orderBy($orderBy, $orderDir)
+                ->get();
         } else {
-            $book = Book::all();
+
+            if ($author_id) {
+                $book = Book::where('author_id', $author_id)->orderBy($orderBy, $orderDir)->get()->all();
+            } else {
+
+                $book = Book::orderBy($orderBy, $orderDir)->get()->all();
+            }
         }
 
-        return $book;
+        return $book;*/
+
+        $author_id = $request->author_id;
+        $orderBy = $request->ob ?? 'title';
+        $orderDir = $request->od ?? 'asc';
+        $perPage = $request->pp ?? 10;
+        $query = Book::withRating();
+
+        if ($author_id) {
+            $query->where('author_id', $author_id);
+        }
+
+        if ($orderBy && $orderDir) {
+            $query->orderBy($orderBy, $orderDir);
+        }
+
+        return $query->simplePaginate($perPage);
     }
 
     /**
@@ -80,8 +111,8 @@ class BookController extends Controller
      * @param \App\Models\Book $book
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Book $book)
+    public function destroy(Request $request, $id)
     {
-        //
+        return Book::destroy($id);
     }
 }
